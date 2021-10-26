@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.client;
 
-import Collators.DesVAscKCollator;
-import Reducers.SumReducerFactory;
+import ar.edu.itba.pod.api.collators.DesVAscKCollator;
+import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
@@ -12,14 +12,12 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import mappers.CounterMapper;
+import ar.edu.itba.pod.api.mappers.CounterMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class TreesPerNeighborhood {
