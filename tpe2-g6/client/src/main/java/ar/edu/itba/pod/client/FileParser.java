@@ -1,5 +1,7 @@
 package ar.edu.itba.pod.client;
 
+import ar.edu.itba.pod.api.model.Neighbourhood;
+import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import ar.edu.itba.pod.client.exceptions.NoSuchCityException;
 
@@ -13,10 +15,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class FileParser {
-
-    private static final String BUE_CODE = "BUE";
-    private static final String VAN_CODE = "VAN";
-
+    
     private static final String TREES_FILE = "arboles";
     private static final String NEIGHBOURHOODS_FILE = "barrios";
 
@@ -31,8 +30,7 @@ public class FileParser {
         this(";");
     }
 
-    // TODO: Change return type to List<[TREE MODEL]>
-    public void parseTrees(String filePath, String cityName) throws IOException {
+    public List<Tree> parseTrees(String filePath, String cityName) throws IOException {
 
         // get headers
         FileFormat currentFileFormat;
@@ -42,14 +40,13 @@ public class FileParser {
             throw new NoSuchFileException(e.getMessage());
         }
 
-        // TODO uncomment when model is ready
         // return value
-        // List<Tree> trees = new ArrayList<>();
+        List<Tree> trees = new ArrayList<>();
 
         // parse trees
         int currentLine = 0;
 
-        String fileName = String.format("%s/%s%s.csv", filePath, NEIGHBOURHOODS_FILE, cityName);
+        String fileName = String.format("%s/%s%s.csv", filePath, TREES_FILE, cityName);
         Path path = Paths.get(fileName);
         BufferedReader file = Files.newBufferedReader(path);
 
@@ -83,23 +80,18 @@ public class FileParser {
                 String currentStreetName = parts[streetNameIndex].trim();
                 String currentName = parts[nameIndex].trim();
 
-                // TODO uncomment when model is ready
-                /*
-                currentTree = new Tree(currentNeighbourhoodName, currentStreetName, currentName)
-                trees.append(currentTree)
-                 */
+                Tree currentTree = new Tree(new Neighbourhood(currentNeighbourhoodName), currentStreetName, currentName);
+                trees.add(currentTree);
             }
 
             // update line
             currentLine++;
         }
 
-        // TODO uncomment when model is ready
-        // return trees;
+        return trees;
     }
 
-    // TODO: Change return type to List<[NEIGHBOURHOOD MODEL]>
-    public void parseNeighbourhoods(String filePath, String cityName) throws IOException {
+    public List<Neighbourhood> parseNeighbourhoods(String filePath, String cityName) throws IOException {
 
         // get headers
         FileFormat currentFileFormat;
@@ -109,8 +101,7 @@ public class FileParser {
             throw new NoSuchCityException();
         }
 
-        // TODO uncomment when model is ready
-        // List<Neighbourhood> neighbours = new ArrayList<>();
+        List<Neighbourhood> neighbourhoods = new ArrayList<>();
 
         // parse neighbours
         int currentLine = 0;
@@ -143,18 +134,14 @@ public class FileParser {
                 String currentName = parts[nameIndex].trim();
                 long currentPopulation = Long.parseLong(parts[populationIndex].trim());
 
-                // TODO uncomment when model is ready
-                /*
-                currentNeighbourhood = new Neighbourhood(currentName, currentPopulation)
-                neighbourhood.append(currentNeighbourhood)
-                 */
+                Neighbourhood currentNeighbourhood = new Neighbourhood(currentName, currentPopulation);
+                neighbourhoods.add(currentNeighbourhood);
             }
 
             // update line
             currentLine++;
         }
 
-        // TODO uncomment when model is ready
-        // return neighbours;
+        return neighbourhoods;
     }
 }
