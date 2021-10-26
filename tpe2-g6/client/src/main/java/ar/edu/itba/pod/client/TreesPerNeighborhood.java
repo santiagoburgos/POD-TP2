@@ -70,7 +70,9 @@ public class TreesPerNeighborhood {
         testMap.set("a7", "bc");
         testMap.set("a8", "bf");
         testMap.set("a9", "bc");
-        testMap.set("a10", "bd");
+        testMap.set("a10", "Bd");
+        testMap.set("a11", "bd");
+        testMap.set("a12", "BD");
 
         KeyValueSource<String,String> source = KeyValueSource.fromMap(testMap);
 
