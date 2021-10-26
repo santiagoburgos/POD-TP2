@@ -3,11 +3,11 @@ package mappers;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class CounterMapper implements Mapper<String, String, String, Long> {
+public class CounterMapper<K, V> implements Mapper<K, V, V, Long> {
     private static final Long ONE = 1L;
 
         @Override
-        public void map(String key, String value, Context<String, Long> context) {
+        public void map(K key, V value, Context<V, Long> context) {
                 context.emit(value, ONE);
             }
 

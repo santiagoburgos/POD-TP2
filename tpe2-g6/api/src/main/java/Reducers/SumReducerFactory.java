@@ -3,9 +3,9 @@ package Reducers;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class SumReducerFactory implements ReducerFactory<String, Long, Long> {
+public class SumReducerFactory<K> implements ReducerFactory<K, Long, Long> {
     @Override
-    public Reducer<Long, Long> newReducer(String key ) {
+    public Reducer<Long, Long> newReducer(K key ) {
         return new SumReducer();
     }
     private class SumReducer extends Reducer<Long, Long> {
