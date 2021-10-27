@@ -1,6 +1,8 @@
 package ar.edu.itba.pod.client;
 
-import ar.edu.itba.pod.api.collators.DesVAscKCollator;
+import ar.edu.itba.pod.api.OutTreeNeighbourhood;
+import ar.edu.itba.pod.api.collators.MaxTreePerPersonKDescCollator;
+import ar.edu.itba.pod.api.mappers.CounterOverPopulationMapper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
@@ -14,23 +16,19 @@ import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import ar.edu.itba.pod.api.mappers.CounterMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class TreesPerNeighborhood {
+public class TreesPerPerson {
 
-    private static Logger logger = LoggerFactory.getLogger(TreesPerNeighborhood.class);
+    private static Logger logger = LoggerFactory.getLogger(TreesPerPerson.class);
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
-        logger.info("tpe2-g6 Query 1 Client Starting ...");
+        logger.info("tpe2-g6 Query 2 Client Starting ...");
 
 
         String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
@@ -63,33 +61,31 @@ public class TreesPerNeighborhood {
         List<Tree> trees = fp.parseTrees(inPath, city);
 
 
-        String ilistName = "g6q1";
-        IList<String> treeOnNeighbourhood = hazelcastInstance.getList(ilistName);
+        String ilistName = "g6q2";
+        IList<OutTreeNeighbourhood> treeOnNeighbourhood = hazelcastInstance.getList(ilistName);
         treeOnNeighbourhood.clear();
         for (Tree t: trees) {
-           if( neighbourhoods.contains(t.getNeighbourhood()) )
-                treeOnNeighbourhood.add(t.getNeighbourhood().getName());
+            if( neighbourhoods.contains(t.getNeighbourhood()) )
+                treeOnNeighbourhood.add( new OutTreeNeighbourhood(t.getNeighbourhood().getName(),t.getName(), t.getNeighbourhood().getPopulation().doubleValue()) );
         }
 
-        KeyValueSource<String,String> source = KeyValueSource.fromList(treeOnNeighbourhood);
+        KeyValueSource<String, OutTreeNeighbourhood> source = KeyValueSource.fromList(treeOnNeighbourhood);
 
-        JobTracker jobTracker = hazelcastInstance.getJobTracker("g6q1");
+        JobTracker jobTracker = hazelcastInstance.getJobTracker(ilistName);
 
-        Job<String, String> job = jobTracker.newJob(source);
-        ICompletableFuture<List<Map.Entry<String, Double>>> future = job
-                .mapper( new CounterMapper() )
+        Job<String, OutTreeNeighbourhood> job = jobTracker.newJob(source);
+        ICompletableFuture<List<Map.Entry<OutTreeNeighbourhood, Double>>> future = job
+                .mapper( new CounterOverPopulationMapper<>() )
                 .reducer( new SumReducerFactory())
-                .submit(new DesVAscKCollator());
+                .submit( new MaxTreePerPersonKDescCollator());
 
-
-        List<Map.Entry<String, Double>> result = future.get();
+        List<Map.Entry<OutTreeNeighbourhood, Double>> result = future.get();
 
 
         //todo to outfile
-        for (Map.Entry<String, Double> e:result) {
-            System.out.println("k " + e.getKey() + " v " + e.getValue().longValue());
+        for (Map.Entry<OutTreeNeighbourhood, Double> e:result) {
+            System.out.println(" " + e.getKey().getNeighbourhoodName() + " " + e.getKey().getTreeName() + " " + String.format(Locale.ROOT,"%.2f",e.getValue()) );
         }
-
 
         HazelcastClient.shutdown(hazelcastInstance);
     }

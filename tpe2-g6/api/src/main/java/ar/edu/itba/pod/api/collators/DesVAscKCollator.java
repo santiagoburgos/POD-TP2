@@ -19,13 +19,11 @@ public class DesVAscKCollator<K extends Comparable, V extends Comparable> implem
 
                 if( o1.getValue() instanceof String )
                     valComp =  ((String)o1.getValue()).toLowerCase().compareTo(((String)o2.getValue()).toLowerCase());
-
                 if(valComp != 0)
                     return valComp;
 
                 if( o1.getKey() instanceof String )
                    return  ((String)o1.getKey()).toLowerCase().compareTo(((String)o2.getKey()).toLowerCase());
-
                 return (o1.getKey()).compareTo(o2.getKey());
             }
         }).collect(Collectors.toList());
