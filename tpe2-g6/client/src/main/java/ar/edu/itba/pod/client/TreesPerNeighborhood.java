@@ -1,22 +1,27 @@
 package ar.edu.itba.pod.client;
 
-import Collators.DesVAscKCollator;
-import Reducers.SumReducerFactory;
+import ar.edu.itba.pod.api.collators.DesVAscKCollator;
+import ar.edu.itba.pod.api.model.Neighbourhood;
+import ar.edu.itba.pod.api.model.Tree;
+import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
+import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import mappers.CounterMapper;
+import ar.edu.itba.pod.api.mappers.CounterMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
+import java.io.IOException;
+import java.security.Key;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,14 +31,14 @@ public class TreesPerNeighborhood {
 
     private static Logger logger = LoggerFactory.getLogger(TreesPerNeighborhood.class);
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
         logger.info("tpe2-g6 Query 1 Client Starting ...");
 
-        //todo parameters
-        //String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
-        //String city = Optional.ofNullable(System.getProperty("city")).orElseThrow(() -> new IllegalArgumentException("'city' argument needed."));
-        //String inPath = Optional.ofNullable(System.getProperty("inPath")).orElseThrow(() -> new IllegalArgumentException("'inPath' argument needed."));
-        //String outPath = Optional.ofNullable(System.getProperty("outPath")).orElseThrow(() -> new IllegalArgumentException("'outPath' argument needed."));
+
+        String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
+        String city = Optional.ofNullable(System.getProperty("city")).orElseThrow(() -> new IllegalArgumentException("'city' argument needed."));
+        String inPath = Optional.ofNullable(System.getProperty("inPath")).orElseThrow(() -> new IllegalArgumentException("'inPath' argument needed."));
+        String outPath = Optional.ofNullable(System.getProperty("outPath")).orElseThrow(() -> new IllegalArgumentException("'outPath' argument needed."));
 
 
         // Client Config
@@ -46,9 +51,8 @@ public class TreesPerNeighborhood {
         // Client Network Config
         ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
 
-        //todo addresses parameter
-        //String[] addresses = addressesArg.split(";");
-        String[] addresses = {"192.168.0.220:5701"};
+
+        String[] addresses = addressesArg.split(";");
 
 
         clientNetworkConfig.addAddress(addresses);
@@ -56,25 +60,20 @@ public class TreesPerNeighborhood {
 
         HazelcastInstance hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
 
+        FileParser fp = new FileParser();
+        List<Neighbourhood> neighbourhoods = fp.parseNeighbourhoods(inPath, city);
+        List<Tree> trees = fp.parseTrees(inPath, city);
 
-        //todo replace with data
-        String mapName = "g6q1";
-        IMap<String, String> testMap = hazelcastInstance.getMap(mapName);
-        testMap.clear();
-        testMap.set("a1", "ba");
-        testMap.set("a2", "ba");
-        testMap.set("a3", "bb");
-        testMap.set("a4", "ba");
-        testMap.set("a5", "bc");
-        testMap.set("a6", "bc");
-        testMap.set("a7", "bc");
-        testMap.set("a8", "bf");
-        testMap.set("a9", "bc");
-        testMap.set("a10", "Bd");
-        testMap.set("a11", "bd");
-        testMap.set("a12", "BD");
 
-        KeyValueSource<String,String> source = KeyValueSource.fromMap(testMap);
+        String ilistName = "g6q1";
+        IList<String> treeOnNeighbourhood = hazelcastInstance.getList(ilistName);
+        for (Tree t: trees) {
+           if( neighbourhoods.contains(t.getNeighbourhood()) )
+                treeOnNeighbourhood.add(t.getNeighbourhood().getName());
+        }
+
+        KeyValueSource<String,String> source = KeyValueSource.fromList(treeOnNeighbourhood);
+
 
         JobTracker jobTracker = hazelcastInstance.getJobTracker("g6q1");
 

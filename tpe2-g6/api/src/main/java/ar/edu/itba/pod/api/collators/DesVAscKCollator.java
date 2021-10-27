@@ -1,4 +1,4 @@
-package Collators;
+package ar.edu.itba.pod.api.collators;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Collator;
