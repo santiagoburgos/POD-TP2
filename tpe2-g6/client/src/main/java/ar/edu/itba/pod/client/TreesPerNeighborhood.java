@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,7 @@ public class TreesPerNeighborhood {
         FileParser fp = new FileParser();
         List<Neighbourhood> neighbourhoods = fp.parseNeighbourhoods(inPath, city);
         List<Tree> trees = fp.parseTrees(inPath, city);
+
 
 
         String ilistName = "g6q1";
