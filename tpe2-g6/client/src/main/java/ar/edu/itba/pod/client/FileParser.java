@@ -80,7 +80,7 @@ public class FileParser {
                 String currentStreetName = parts[streetNameIndex].trim();
                 String currentName = parts[nameIndex].trim();
 
-                Tree currentTree = new Tree(new Neighbourhood(currentNeighbourhoodName), currentStreetName, currentName);
+                Tree currentTree = new Tree(currentNeighbourhoodName, currentStreetName, currentName);
                 trees.add(currentTree);
             }
 
