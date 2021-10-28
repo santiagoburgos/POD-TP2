@@ -21,11 +21,11 @@ public class DesVAscKCollator<K extends Comparable, V extends Comparable> implem
                 return valComp;
 
             if( o1.getKey() instanceof String )
-               return  ((String)o1.getKey()).toLowerCase().compareTo(((String)o2.getKey()).toLowerCase());
+                return  ((String)o1.getKey()).toLowerCase().compareTo(((String)o2.getKey()).toLowerCase());
             return (o1.getKey()).compareTo(o2.getKey());
         }).collect(Collectors.toList());
 
-    return sorted;
+        return sorted;
 
     }
 }
