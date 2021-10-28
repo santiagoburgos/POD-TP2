@@ -6,6 +6,7 @@ import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.Query1Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
@@ -41,6 +42,7 @@ public class Query1 extends Query{
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 1 Client Starting ...");
 
+        Query1Writer queryWriter = new Query1Writer(this.outPath);
         TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time1.txt");
 
         // Parse arguments
@@ -76,14 +78,9 @@ public class Query1 extends Query{
 
 
         List<Map.Entry<String, Double>> result = future.get();
-
-        //todo to outfile
-        for (Map.Entry<String, Double> e:result) {
-            System.out.println("k " + e.getKey() + " v " + e.getValue().longValue());
-        }
+        queryWriter.writeQueryResults(result);
 
         timeLogger.addEvent(EventType.MAPREDUCE_END);
-
 
         this.instance.shutdown();
     }

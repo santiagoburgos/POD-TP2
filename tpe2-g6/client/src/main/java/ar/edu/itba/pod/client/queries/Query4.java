@@ -8,6 +8,7 @@ import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.UniqueReducerFactory;
 import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.Query4Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
@@ -39,6 +40,7 @@ public class Query4 extends Query {
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 4 Client Starting ...");
 
+        Query4Writer queryWriter = new Query4Writer(this.outPath);
         TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time4.txt");
 
         // Parse arguments
@@ -75,7 +77,7 @@ public class Query4 extends Query {
 
         List<PairedValues> entries = completableFuture.get();
 
-        // TODO write entries to csv
+        queryWriter.writeQueryResults(entries);
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         // Shut down

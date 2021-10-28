@@ -8,6 +8,7 @@ import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.predicates.SpecificKeyPredicate;
 import ar.edu.itba.pod.api.reducers.SumInTensReducerFactory;
 import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.Query5Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import com.hazelcast.core.ICompletableFuture;
@@ -51,6 +52,7 @@ public class Query5 extends Query {
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 5 Client Starting ...");
 
+        Query5Writer queryWriter = new Query5Writer(this.outPath);
         TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time5.txt");
 
         // Parse arguments
@@ -85,7 +87,7 @@ public class Query5 extends Query {
 
         List<PairedValues> entries = completableFuture.get();
 
-        // TODO write entries to csv
+        queryWriter.writeQueryResults(entries);
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         // Shut down

@@ -13,6 +13,7 @@ import ar.edu.itba.pod.api.reducers.MaxValueReducerFactory;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 
 import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.Query2Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
@@ -46,6 +47,7 @@ public class Query2 extends Query{
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 2 Client Starting ...");
 
+        Query2Writer queryWriter = new Query2Writer(this.outPath);
         TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time2.txt");
 
         // Parse arguments
@@ -97,10 +99,7 @@ public class Query2 extends Query{
 
         List<Map.Entry<String, PairCompoundKeyValue>> result2 = future2.get();
 
-        //todo to output
-        for (Map.Entry<String, PairCompoundKeyValue> e:result2) {
-            System.out.println(" " + e.getValue().getK1() + " " + e.getValue().getK2() + " " + String.format(Locale.ROOT,"%.2f",e.getValue().getValue()));
-        }
+        queryWriter.writeQueryResults(result2);
 
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
