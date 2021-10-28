@@ -12,6 +12,8 @@ import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.MaxValueReducerFactory;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 
+import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
@@ -26,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class Query2 extends Query{
+    private static final String QUERY_ID = "g6q2";
 
 
     private static Logger logger = LoggerFactory.getLogger(Query2.class);
@@ -43,6 +46,7 @@ public class Query2 extends Query{
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 2 Client Starting ...");
 
+        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time2.txt");
 
         // Parse arguments
         readArguments();
@@ -51,10 +55,10 @@ public class Query2 extends Query{
         configHazelCast();
 
         // Parse data
+        timeLogger.addEvent(EventType.FILE_READ_START);
         List<Tree> trees = getTrees();
         List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
-
-
+        timeLogger.addEvent(EventType.FILE_READ_END);
 
         String imapName1 = "g6q21";
         IMap<String, PairCompoundKeyValue> treeOnNeighbourhood = this.instance.getMap(imapName1);
@@ -68,7 +72,7 @@ public class Query2 extends Query{
 
 
         Job<String, PairCompoundKeyValue> job = jobTracker.newJob(source);
-        // TODO write start time
+        timeLogger.addEvent(EventType.MAPREDUCE_START);
         ICompletableFuture<Map<PairCompoundKeyValue, Double>> future = job
                 .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
                 .mapper( new CountOverValueMapper<>() )
@@ -92,12 +96,13 @@ public class Query2 extends Query{
                 .submit(new KAscCollator<>());
 
         List<Map.Entry<String, PairCompoundKeyValue>> result2 = future2.get();
-        // TODO write stop time
 
         //todo to output
         for (Map.Entry<String, PairCompoundKeyValue> e:result2) {
             System.out.println(" " + e.getValue().getK1() + " " + e.getValue().getK2() + " " + String.format(Locale.ROOT,"%.2f",e.getValue().getValue()));
         }
+
+        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         this.instance.shutdown();
     }

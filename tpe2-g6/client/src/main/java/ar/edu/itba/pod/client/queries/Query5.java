@@ -60,7 +60,9 @@ public class Query5 extends Query {
         configHazelCast();
 
         // Parse data
+        timeLogger.addEvent(EventType.FILE_READ_START);
         List<Tree> trees = getTrees();
+        timeLogger.addEvent(EventType.FILE_READ_END);
         IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
         dMap.clear();
         trees.forEach(tree -> dMap.put(tree.getNeighbourhood().getName(), tree));

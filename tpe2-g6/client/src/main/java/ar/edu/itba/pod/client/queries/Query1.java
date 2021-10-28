@@ -5,6 +5,8 @@ import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
+import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 
 public class Query1 extends Query{
 
+    private static final String QUERY_ID = "g6q1";
+
     private static Logger logger = LoggerFactory.getLogger(Query1.class);
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
@@ -37,6 +41,8 @@ public class Query1 extends Query{
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 1 Client Starting ...");
 
+        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time1.txt");
+
         // Parse arguments
         readArguments();
 
@@ -44,8 +50,10 @@ public class Query1 extends Query{
         configHazelCast();
 
         // Parse data
+        timeLogger.addEvent(EventType.FILE_READ_START);
         List<Tree> trees = getTrees();
         List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
+        timeLogger.addEvent(EventType.FILE_READ_END);
 
         String imapName = "g6q1";
         IMap<String, String> treeOnNeighbourhood = this.instance.getMap(imapName);
@@ -59,7 +67,7 @@ public class Query1 extends Query{
 
         Job<String, String> job = jobTracker.newJob(source);
 
-        // TODO write start time
+        timeLogger.addEvent(EventType.MAPREDUCE_START);
         ICompletableFuture<List<Map.Entry<String, Double>>> future = job
                 .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
                 .mapper( new CounterMapper() )
@@ -68,12 +76,13 @@ public class Query1 extends Query{
 
 
         List<Map.Entry<String, Double>> result = future.get();
-        // TODO write stop time
 
         //todo to outfile
         for (Map.Entry<String, Double> e:result) {
             System.out.println("k " + e.getKey() + " v " + e.getValue().longValue());
         }
+
+        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
 
         this.instance.shutdown();

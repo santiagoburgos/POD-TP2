@@ -64,8 +64,10 @@ public class Query3 extends Query{
         configHazelCast();
 
         // Parse data
+        timeLogger.addEvent(EventType.FILE_READ_START);
         List<Tree> trees = getTrees();
         List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
+        timeLogger.addEvent(EventType.FILE_READ_END);
 
 
         IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
