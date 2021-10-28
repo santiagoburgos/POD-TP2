@@ -2,13 +2,16 @@ package ar.edu.itba.pod.client.queries;
 
 import ar.edu.itba.pod.api.collators.TopNCollator;
 import ar.edu.itba.pod.api.mappers.NeighbourhoodSpeciesCounterMapper;
+import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
+import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.UniqueReducerFactory;
 import ar.edu.itba.pod.client.EventType;
 import ar.edu.itba.pod.client.TimeLogger;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class Query3 extends Query{
     private static final String QUERY_ID = "g6q3";
@@ -61,11 +65,17 @@ public class Query3 extends Query{
 
         // Parse data
         List<Tree> trees = getTrees();
-        IList<Tree> dlist = this.instance.getList(QUERY_ID + "l");
-        dlist.addAll(trees);
+        List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
+
+
+        IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
+        dMap.clear();
+        trees.forEach(tree -> dMap.put(tree.getNeighbourhood().getName(), tree));
+
+
 
         // Get key value source
-        KeyValueSource<String, Tree> source = KeyValueSource.fromList(dlist);
+        KeyValueSource<String, Tree> source = KeyValueSource.fromMap(dMap);
 
         // Get job tracker
         JobTracker jobTracker = this.instance.getJobTracker(QUERY_ID + "j");
@@ -76,6 +86,7 @@ public class Query3 extends Query{
         timeLogger.addEvent(EventType.MAPREDUCE_START);
 
         ICompletableFuture<List<Map.Entry<String, Long>>> future = job
+                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
                 .mapper(new NeighbourhoodSpeciesCounterMapper())
                 .reducer(new UniqueReducerFactory())
                 .submit(new TopNCollator(n));

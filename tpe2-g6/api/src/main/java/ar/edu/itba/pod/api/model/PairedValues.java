@@ -12,6 +12,8 @@ public class PairedValues implements Comparable<PairedValues>, DataSerializable 
     private String member1;
     private String member2;
 
+    protected PairedValues(){};
+
     // Precaution, this auxiliary object does not consider case member1 == member2, this should be avoided by the user
     public PairedValues(Long commonValue, String member1, String member2) {
         this.commonValue = commonValue;
