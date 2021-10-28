@@ -53,18 +53,13 @@ public abstract class Query {
     }
 
     public List<Tree> getTrees() throws IOException {
-        // TODO Write time start
         List<Tree> trees = parser.parseTrees(inPath, city);
-        // TODO Write time stop
 
         return trees;
     }
 
     public List<Neighbourhood> getNeighbourhoods() throws IOException {
-        // TODO Write time start
         List<Neighbourhood> neighbourhoods = parser.parseNeighbourhoods(inPath, city);
-        // TODO Write time stop
-
         return neighbourhoods;
     }
 

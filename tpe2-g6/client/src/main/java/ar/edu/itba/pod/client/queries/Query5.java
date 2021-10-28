@@ -7,6 +7,8 @@ import ar.edu.itba.pod.api.model.PairedValues;
 import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.predicates.SpecificKeyPredicate;
 import ar.edu.itba.pod.api.reducers.SumInTensReducerFactory;
+import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.TimeLogger;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
@@ -49,6 +51,8 @@ public class Query5 extends Query {
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 5 Client Starting ...");
 
+        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time5.txt");
+
         // Parse arguments
         readArguments();
 
@@ -70,7 +74,7 @@ public class Query5 extends Query {
         Job<String, Tree> job = jobTracker.newJob(source);
 
         // Map reduce
-        // TODO write start time
+        timeLogger.addEvent(EventType.MAPREDUCE_START);
         ICompletableFuture<List<PairedValues>> completableFuture = job.keyPredicate(new SpecificKeyPredicate(this.neighbourhood))
                 .mapper(new StreetSpecificTreeNameMapper(this.commonName))
                 .combiner(new SumCombinerFactory())
@@ -78,9 +82,9 @@ public class Query5 extends Query {
                 .submit(new PairedValuesCollator());
 
         List<PairedValues> entries = completableFuture.get();
-        // TODO write stop time
 
         // TODO write entries to csv
+        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         // Shut down
         this.instance.shutdown();
