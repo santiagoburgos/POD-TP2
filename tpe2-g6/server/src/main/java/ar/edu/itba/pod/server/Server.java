@@ -5,11 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.hazelcast.core.Hazelcast;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 
 public class Server {
@@ -21,9 +19,13 @@ public class Server {
         String ip = "192.168.1.*";
         try {
             Properties props = new Properties();
-            String path = Optional.ofNullable(Thread.currentThread().getContextClassLoader().getResource("")).orElseThrow(IllegalArgumentException::new).getPath() + "config.properties";
-            props.load(new FileInputStream(path));
+            String propFile = "config.properties";
+            InputStream inputStream = Server.class.getClassLoader().getResourceAsStream(propFile);
+            if (inputStream == null)
+                throw new IllegalArgumentException();
+            props.load(inputStream);
             ip = props.getProperty("ip");
+
         } catch (IllegalArgumentException ignored) {
 
         }
