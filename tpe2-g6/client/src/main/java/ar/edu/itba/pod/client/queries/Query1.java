@@ -4,11 +4,6 @@ import ar.edu.itba.pod.api.collators.DesVAscKCollator;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.client.config.ClientNetworkConfig;
-import com.hazelcast.config.GroupConfig;
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.Job;
@@ -19,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -65,6 +59,8 @@ public class Query1 extends Query{
         JobTracker jobTracker = this.instance.getJobTracker("g6q1");
 
         Job<String, String> job = jobTracker.newJob(source);
+
+        // TODO write start time
         ICompletableFuture<List<Map.Entry<String, Double>>> future = job
                 .mapper( new CounterMapper() )
                 .reducer( new SumReducerFactory())
@@ -72,7 +68,7 @@ public class Query1 extends Query{
 
 
         List<Map.Entry<String, Double>> result = future.get();
-
+        // TODO write stop time
 
         //todo to outfile
         for (Map.Entry<String, Double> e:result) {

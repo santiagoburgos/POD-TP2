@@ -8,11 +8,6 @@ import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.reducers.Query2MaxPopReducerFactory;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.client.config.ClientNetworkConfig;
-import com.hazelcast.config.GroupConfig;
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
@@ -68,6 +63,7 @@ public class Query2 extends Query{
 
 
         Job<String, Q2NeighbourhoodTree> job = jobTracker.newJob(source);
+        // TODO write start time
         ICompletableFuture<Map<Q2NeighbourhoodTree, Double>> future = job
                 .mapper( new Query2CountPopulationMapper<>() )
                 .reducer( new SumReducerFactory())
@@ -90,7 +86,7 @@ public class Query2 extends Query{
                 .submit(new KAscCollator<>());
 
         List<Map.Entry<String, Q2NeighbourhoodTree>> result2 = future2.get();
-
+        // TODO write stop time
 
         //todo to output
         for (Map.Entry<String, Q2NeighbourhoodTree> e:result2) {

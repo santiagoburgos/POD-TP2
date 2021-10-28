@@ -1,5 +1,5 @@
 #!/bin/bash
 
 
-java "$@" -cp 'lib/jars/*' "ar.edu.itba.pod.client.Query2"
+java "$@" -cp 'lib/jars/*' "ar.edu.itba.pod.client.queries.Query2"
 
