@@ -86,9 +86,9 @@ public class Query5 extends Query {
                 .submit(new PairedValuesCollator());
 
         List<PairedValues> entries = completableFuture.get();
+        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         queryWriter.writeQueryResults(entries);
-        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         // Shut down
         this.instance.shutdown();

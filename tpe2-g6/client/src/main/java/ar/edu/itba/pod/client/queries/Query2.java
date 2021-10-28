@@ -99,9 +99,8 @@ public class Query2 extends Query{
 
         List<Map.Entry<String, PairCompoundKeyValue>> result2 = future2.get();
 
-        queryWriter.writeQueryResults(result2);
-
         timeLogger.addEvent(EventType.MAPREDUCE_END);
+        queryWriter.writeQueryResults(result2);
 
         this.instance.shutdown();
     }

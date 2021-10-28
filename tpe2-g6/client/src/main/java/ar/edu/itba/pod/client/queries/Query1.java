@@ -78,9 +78,9 @@ public class Query1 extends Query{
 
 
         List<Map.Entry<String, Double>> result = future.get();
-        queryWriter.writeQueryResults(result);
-
         timeLogger.addEvent(EventType.MAPREDUCE_END);
+
+        queryWriter.writeQueryResults(result);
 
         this.instance.shutdown();
     }

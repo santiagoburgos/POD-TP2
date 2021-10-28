@@ -95,9 +95,9 @@ public class Query3 extends Query{
                 .submit(new TopNCollator(n));
 
         List<Map.Entry<String, Long>> result = future.get();
+        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         queryWriter.writeQueryResults(result);
-        timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         // Shut down
         this.instance.shutdown();

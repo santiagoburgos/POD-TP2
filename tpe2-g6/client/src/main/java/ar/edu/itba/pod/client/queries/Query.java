@@ -53,14 +53,11 @@ public abstract class Query {
     }
 
     public List<Tree> getTrees() throws IOException {
-        List<Tree> trees = parser.parseTrees(inPath, city);
-
-        return trees;
+        return parser.parseTrees(inPath, city);
     }
 
     public List<Neighbourhood> getNeighbourhoods() throws IOException {
-        List<Neighbourhood> neighbourhoods = parser.parseNeighbourhoods(inPath, city);
-        return neighbourhoods;
+        return parser.parseNeighbourhoods(inPath, city);
     }
 
     public abstract void run() throws IOException, ExecutionException, InterruptedException;
