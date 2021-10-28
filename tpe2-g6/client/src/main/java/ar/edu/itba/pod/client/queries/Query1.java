@@ -1,19 +1,20 @@
 package ar.edu.itba.pod.client.queries;
 
 import ar.edu.itba.pod.api.collators.DesVAscKCollator;
+import ar.edu.itba.pod.api.collators.TopNCollator;
+import ar.edu.itba.pod.api.mappers.NeighbourhoodSpeciesCounterMapper;
+import ar.edu.itba.pod.api.mappers.TreesCounterMaper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 import ar.edu.itba.pod.client.EventType;
 import ar.edu.itba.pod.client.writers.Query1Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
-import com.hazelcast.core.IMap;
+import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import ar.edu.itba.pod.api.mappers.CounterMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,32 +58,35 @@ public class Query1 extends Query{
         List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
         timeLogger.addEvent(EventType.FILE_READ_END);
 
-        String imapName = "g6q1";
-        IMap<String, String> treeOnNeighbourhood = this.instance.getMap(imapName);
+        String ilistName = "g6q1";
+        IList<String> treeOnNeighbourhood = this.instance.getList(ilistName);
         treeOnNeighbourhood.clear();
         for (Tree t: trees) {
-                treeOnNeighbourhood.put(t.getNeighbourhood().getName(), t.getNeighbourhood().getName());
+                treeOnNeighbourhood.add( t.getNeighbourhood().getName());
         }
 
-        KeyValueSource<String,String> source = KeyValueSource.fromMap(treeOnNeighbourhood);
-        JobTracker jobTracker = this.instance.getJobTracker("g6q1");
+        KeyValueSource<String,String> source = KeyValueSource.fromList(treeOnNeighbourhood);
+        JobTracker jobTracker = this.instance.getJobTracker(ilistName);
 
         Job<String, String> job = jobTracker.newJob(source);
 
         timeLogger.addEvent(EventType.MAPREDUCE_START);
-        ICompletableFuture<List<Map.Entry<String, Double>>> future = job
-                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
-                .mapper( new CounterMapper() )
-                .reducer( new SumReducerFactory())
-                .submit(new DesVAscKCollator());
-
-
-        List<Map.Entry<String, Double>> result = future.get();
+        List<Map.Entry<String, Double>> result = mapReduce(job, neighbourhoods);
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         queryWriter.writeQueryResults(result);
 
         this.instance.shutdown();
+    }
+
+    public List<Map.Entry<String, Double>> mapReduce(Job<String, String> job, List<String> neighbourhoods) throws ExecutionException, InterruptedException {
+        ICompletableFuture<List<Map.Entry<String, Double>>> future = job
+                .mapper( new TreesCounterMaper(neighbourhoods) )
+                .reducer( new SumReducerFactory())
+                .submit(new DesVAscKCollator());
+
+
+        return future.get();
     }
 
 

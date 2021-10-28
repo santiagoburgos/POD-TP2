@@ -8,7 +8,6 @@ import ar.edu.itba.pod.api.mappers.Key1PairMapper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.PairCompoundKeyValue;
 import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.MaxValueReducerFactory;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 
@@ -16,6 +15,7 @@ import ar.edu.itba.pod.client.EventType;
 import ar.edu.itba.pod.client.writers.Query2Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
+import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -62,47 +62,56 @@ public class Query2 extends Query{
         List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
         timeLogger.addEvent(EventType.FILE_READ_END);
 
-        String imapName1 = "g6q21";
-        IMap<String, PairCompoundKeyValue> treeOnNeighbourhood = this.instance.getMap(imapName1);
+        String ilistName = "g6q21";
+        IList<PairCompoundKeyValue> treeOnNeighbourhood = this.instance.getList(ilistName);
         treeOnNeighbourhood.clear();
         for (Tree t: trees) {
-            treeOnNeighbourhood.put(t.getNeighbourhood().getName(), new PairCompoundKeyValue(t.getNeighbourhood().getName(),t.getName(), t.getNeighbourhood().getPopulation().doubleValue()) );
+            treeOnNeighbourhood.add(new PairCompoundKeyValue(t.getNeighbourhood().getName(),t.getName(), t.getNeighbourhood().getPopulation().doubleValue()) );
         }
 
-        KeyValueSource<String, PairCompoundKeyValue> source = KeyValueSource.fromMap(treeOnNeighbourhood);
-        JobTracker jobTracker = this.instance.getJobTracker(imapName1);
-
-
+        KeyValueSource<String, PairCompoundKeyValue> source = KeyValueSource.fromList(treeOnNeighbourhood);
+        JobTracker jobTracker = this.instance.getJobTracker(QUERY_ID);
         Job<String, PairCompoundKeyValue> job = jobTracker.newJob(source);
+
         timeLogger.addEvent(EventType.MAPREDUCE_START);
-        ICompletableFuture<Map<PairCompoundKeyValue, Double>> future = job
-                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
-                .mapper( new CountOverValueMapper<>() )
-                .reducer( new SumReducerFactory())
-                .submit();
 
-        Map<PairCompoundKeyValue, Double> result = future.get();
+        Map<PairCompoundKeyValue, Double> result = mapReduce1(job, neighbourhoods);
 
-        String imapName2 = "g6q22";
-        IMap<PairCompoundKeyValue, Double> resImap = this.instance.getMap(imapName2);
+        String imapName = "g6q22";
+        IMap<PairCompoundKeyValue, Double> resImap = this.instance.getMap(imapName);
         resImap.clear();
         for (PairCompoundKeyValue t: result.keySet()) {
-           resImap.put(t, result.get(t));
+            resImap.put(t, result.get(t));
         }
-
         KeyValueSource<PairCompoundKeyValue, Double> source2 = KeyValueSource.fromMap(resImap);
-        Job<PairCompoundKeyValue, Double> job2 = jobTracker.newJob(source2);
-        ICompletableFuture<List<Map.Entry<String, PairCompoundKeyValue>>> future2 = job2
-                .mapper( new Key1PairMapper() )
-                .reducer( new MaxValueReducerFactory())
-                .submit(new KAscCollator<>());
+        Job<PairCompoundKeyValue, Double> job2 = this.instance.getJobTracker(QUERY_ID).newJob(source2);
 
-        List<Map.Entry<String, PairCompoundKeyValue>> result2 = future2.get();
+        List<Map.Entry<String, PairCompoundKeyValue>> result2 = mapReduce2(job2);
 
         timeLogger.addEvent(EventType.MAPREDUCE_END);
         queryWriter.writeQueryResults(result2);
 
         this.instance.shutdown();
+    }
+
+    public Map<PairCompoundKeyValue, Double> mapReduce1( Job<String, PairCompoundKeyValue> job, List<String> neighbourhoods) throws ExecutionException, InterruptedException {
+        ICompletableFuture<Map<PairCompoundKeyValue, Double>> future = job
+                .mapper( new CountOverValueMapper<>(neighbourhoods) )
+                .reducer( new SumReducerFactory())
+                .submit();
+
+        return future.get();
+    }
+
+
+    public List<Map.Entry<String, PairCompoundKeyValue>> mapReduce2(Job<PairCompoundKeyValue, Double>  job) throws ExecutionException, InterruptedException {
+
+        ICompletableFuture<List<Map.Entry<String, PairCompoundKeyValue>>> future2 = job
+                .mapper( new Key1PairMapper() )
+                .reducer( new MaxValueReducerFactory())
+                .submit(new KAscCollator<>());
+
+        return future2.get();
     }
 
 
