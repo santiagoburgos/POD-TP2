@@ -3,9 +3,10 @@ package ar.edu.itba.pod.client.queries;
 import ar.edu.itba.pod.api.collators.DesVAscKCollator;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
+import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 import com.hazelcast.core.ICompletableFuture;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class Query1 extends Query{
 
@@ -42,26 +44,24 @@ public class Query1 extends Query{
         configHazelCast();
 
         // Parse data
-        List<Neighbourhood> neighbourhoods = getNeighbourhoods();
         List<Tree> trees = getTrees();
+        List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
 
-
-        String ilistName = "g6q1";
-        IList<String> treeOnNeighbourhood = this.instance.getList(ilistName);
+        String imapName = "g6q1";
+        IMap<String, String> treeOnNeighbourhood = this.instance.getMap(imapName);
         treeOnNeighbourhood.clear();
         for (Tree t: trees) {
-           if( neighbourhoods.contains(t.getNeighbourhood()) )
-                treeOnNeighbourhood.add(t.getNeighbourhood().getName());
+                treeOnNeighbourhood.put(t.getNeighbourhood().getName(), t.getNeighbourhood().getName());
         }
 
-        KeyValueSource<String,String> source = KeyValueSource.fromList(treeOnNeighbourhood);
-
+        KeyValueSource<String,String> source = KeyValueSource.fromMap(treeOnNeighbourhood);
         JobTracker jobTracker = this.instance.getJobTracker("g6q1");
 
         Job<String, String> job = jobTracker.newJob(source);
 
         // TODO write start time
         ICompletableFuture<List<Map.Entry<String, Double>>> future = job
+                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
                 .mapper( new CounterMapper() )
                 .reducer( new SumReducerFactory())
                 .submit(new DesVAscKCollator());

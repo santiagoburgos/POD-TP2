@@ -8,11 +8,11 @@ import ar.edu.itba.pod.api.mappers.Key1PairMapper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.PairCompoundKeyValue;
 import ar.edu.itba.pod.api.model.Tree;
+import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.MaxValueReducerFactory;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 
 import com.hazelcast.core.ICompletableFuture;
-import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class Query2 extends Query{
 
@@ -40,7 +41,7 @@ public class Query2 extends Query{
 
     @Override
     public void run() throws IOException, ExecutionException, InterruptedException {
-        logger.info("tpe2-g6 Query 1 Client Starting ...");
+        logger.info("tpe2-g6 Query 2 Client Starting ...");
 
 
         // Parse arguments
@@ -50,33 +51,34 @@ public class Query2 extends Query{
         configHazelCast();
 
         // Parse data
-        List<Neighbourhood> neighbourhoods = getNeighbourhoods();
         List<Tree> trees = getTrees();
+        List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
 
 
-        String ilistName = "g6q2";
-        IList<PairCompoundKeyValue> treeOnNeighbourhood = this.instance.getList(ilistName);
+
+        String imapName1 = "g6q21";
+        IMap<String, PairCompoundKeyValue> treeOnNeighbourhood = this.instance.getMap(imapName1);
         treeOnNeighbourhood.clear();
         for (Tree t: trees) {
-            if( neighbourhoods.contains(t.getNeighbourhood()) )
-                treeOnNeighbourhood.add( new PairCompoundKeyValue(t.getNeighbourhood().getName(),t.getName(), t.getNeighbourhood().getPopulation().doubleValue()) );
+            treeOnNeighbourhood.put(t.getNeighbourhood().getName(), new PairCompoundKeyValue(t.getNeighbourhood().getName(),t.getName(), t.getNeighbourhood().getPopulation().doubleValue()) );
         }
 
-        KeyValueSource<String, PairCompoundKeyValue> source = KeyValueSource.fromList(treeOnNeighbourhood);
-        JobTracker jobTracker = this.instance.getJobTracker(ilistName);
+        KeyValueSource<String, PairCompoundKeyValue> source = KeyValueSource.fromMap(treeOnNeighbourhood);
+        JobTracker jobTracker = this.instance.getJobTracker(imapName1);
 
 
         Job<String, PairCompoundKeyValue> job = jobTracker.newJob(source);
         // TODO write start time
         ICompletableFuture<Map<PairCompoundKeyValue, Double>> future = job
+                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
                 .mapper( new CountOverValueMapper<>() )
                 .reducer( new SumReducerFactory())
                 .submit();
 
         Map<PairCompoundKeyValue, Double> result = future.get();
 
-        String imapName = "g6q2";
-        IMap<PairCompoundKeyValue, Double> resImap = this.instance.getMap(imapName);
+        String imapName2 = "g6q22";
+        IMap<PairCompoundKeyValue, Double> resImap = this.instance.getMap(imapName2);
         resImap.clear();
         for (PairCompoundKeyValue t: result.keySet()) {
            resImap.put(t, result.get(t));
