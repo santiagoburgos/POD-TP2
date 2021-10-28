@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.api;
+package ar.edu.itba.pod.api.model;
 
 
 import com.hazelcast.nio.ObjectDataInput;
@@ -9,16 +9,16 @@ import java.io.IOException;
 import java.util.Objects;
 
 
-public class OutTreeNeighbourhood implements DataSerializable {
+public class Q2NeighbourhoodTree implements DataSerializable {
     private String neighbourhoodName;
     private String treeName;
     private Double population;
 
-    public OutTreeNeighbourhood(){
+    public Q2NeighbourhoodTree(){
     }
 
 
-    public OutTreeNeighbourhood(String neighbourhoodName, String treeName, Double value) {
+    public Q2NeighbourhoodTree(String neighbourhoodName, String treeName, Double value) {
         this.neighbourhoodName = neighbourhoodName;
         this.population = value;
         this.treeName = treeName;
@@ -66,7 +66,7 @@ public class OutTreeNeighbourhood implements DataSerializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        OutTreeNeighbourhood other = (OutTreeNeighbourhood) o;
+        Q2NeighbourhoodTree other = (Q2NeighbourhoodTree) o;
         return this.neighbourhoodName.equals(other.neighbourhoodName) && this.treeName.equals(other.treeName);
     }
 
