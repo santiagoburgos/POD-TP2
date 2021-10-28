@@ -9,6 +9,6 @@ public class NeighbourhoodSpeciesCounterMapper implements Mapper<String, Tree, S
 
     @Override
     public void map(String key, Tree tree, Context<String, String> context) {
-        context.emit(tree.getNeighbourhood(), tree.getName());
+        context.emit(tree.getNeighbourhood().getName(), tree.getName());
     }
 }

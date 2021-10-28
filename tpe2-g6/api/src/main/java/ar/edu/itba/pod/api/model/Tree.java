@@ -7,23 +7,22 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 
 public class Tree implements DataSerializable {
-    private String neighbourhood;
+    private Neighbourhood neighbourhood;
     private String street;
     private String name;
 
-    protected Tree(){}
-
-    public Tree(String neighbourhood, String street, String name) {
+    protected Tree() {}
+    public Tree(Neighbourhood neighbourhood, String street, String name) {
         this.neighbourhood = neighbourhood;
         this.street = street;
         this.name = name;
     }
 
-    public String getNeighbourhood() {
+    public Neighbourhood getNeighbourhood() {
         return neighbourhood;
     }
 
-    public void setNeighbourhood(String neighbourhood) {
+    public void setNeighbourhood(Neighbourhood neighbourhood) {
         this.neighbourhood = neighbourhood;
     }
 
@@ -45,14 +44,14 @@ public class Tree implements DataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput objectDataOutput) throws IOException {
-        objectDataOutput.writeUTF(this.neighbourhood);
+        objectDataOutput.writeUTF(this.neighbourhood.getName());
         objectDataOutput.writeUTF(this.street);
         objectDataOutput.writeUTF(this.name);
     }
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
-        this.neighbourhood = objectDataInput.readUTF();
+        this.neighbourhood = new Neighbourhood(objectDataInput.readUTF());
         this.street = objectDataInput.readUTF();
         this.name = objectDataInput.readUTF();
     }
@@ -65,5 +64,4 @@ public class Tree implements DataSerializable {
         return neighbourhood.equals(tree.neighbourhood) &&
                 street.equals(tree.street) &&
                 name.equals(tree.name);
-    }
-}
+    }}
