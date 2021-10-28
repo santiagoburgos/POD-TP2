@@ -1,8 +1,6 @@
 package ar.edu.itba.pod.client.queries;
 
 import ar.edu.itba.pod.api.collators.DesVAscKCollator;
-import ar.edu.itba.pod.api.collators.TopNCollator;
-import ar.edu.itba.pod.api.mappers.NeighbourhoodSpeciesCounterMapper;
 import ar.edu.itba.pod.api.mappers.TreesCounterMaper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
