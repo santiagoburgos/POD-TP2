@@ -26,3 +26,6 @@ hs_err_pid*
 .idea/
 target/
 *.iml
+
+tpe2-g6/tpe2-g6-client-1.0-SNAPSHOT
+tpe2-g6/tpe2-g6-server-1.0-SNAPSHOT
