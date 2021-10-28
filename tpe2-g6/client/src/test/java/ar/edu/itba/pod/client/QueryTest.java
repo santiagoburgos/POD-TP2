@@ -1,18 +1,33 @@
 package ar.edu.itba.pod.client;
 
+import ar.edu.itba.pod.api.model.Neighbourhood;
+import ar.edu.itba.pod.api.model.PairedValues;
+import ar.edu.itba.pod.api.model.Tree;
+import ar.edu.itba.pod.client.queries.Query5;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IList;
+import com.hazelcast.mapreduce.Job;
+import com.hazelcast.mapreduce.KeyValueSource;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HazelcastTest {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+public abstract class QueryTest {
     private TestHazelcastFactory hazelcastFactory;
-    private HazelcastInstance member, client;
+    protected HazelcastInstance member, client;
+
+    protected final List<Neighbourhood> neighbourhoods = Arrays.asList(
+            new Neighbourhood("B1"), new Neighbourhood("B2"), new Neighbourhood("B3"));
 
     @Before
     public void setUp() {
@@ -33,9 +48,7 @@ public class HazelcastTest {
     }
 
     @Test
-    public void testQuery1() {
-
-    }
+    public abstract void testQuery() throws ExecutionException, InterruptedException;
 
     @After
     public void tearDown() {

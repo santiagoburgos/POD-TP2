@@ -25,7 +25,7 @@ public class PairedValues implements Comparable<PairedValues>, DataSerializable 
     @Override
     public int compareTo(PairedValues pairedValues) {
         final int cvc = commonValue.compareTo(pairedValues.commonValue);
-        if (cvc != 0) return cvc;
+        if (cvc != 0) return cvc * -1;
         final int m1c = member1.compareTo(pairedValues.member1);
         if (m1c != 0) return m1c;
         return member2.compareTo(pairedValues.member2);

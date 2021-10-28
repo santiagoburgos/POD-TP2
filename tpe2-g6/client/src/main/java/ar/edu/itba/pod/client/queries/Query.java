@@ -61,4 +61,9 @@ public abstract class Query {
     }
 
     public abstract void run() throws IOException, ExecutionException, InterruptedException;
+
+    // For testing
+    public void setInstance(HazelcastInstance instance) {
+        this.instance = instance;
+    }
 }

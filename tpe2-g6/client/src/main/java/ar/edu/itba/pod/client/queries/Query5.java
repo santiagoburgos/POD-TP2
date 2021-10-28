@@ -5,14 +5,13 @@ import ar.edu.itba.pod.api.combiners.SumCombinerFactory;
 import ar.edu.itba.pod.api.mappers.StreetSpecificTreeNameMapper;
 import ar.edu.itba.pod.api.model.PairedValues;
 import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.api.predicates.SpecificKeyPredicate;
 import ar.edu.itba.pod.api.reducers.SumInTensReducerFactory;
 import ar.edu.itba.pod.client.EventType;
 import ar.edu.itba.pod.client.writers.Query5Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import com.hazelcast.core.ICompletableFuture;
-import com.hazelcast.core.IMap;
+import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -65,12 +64,12 @@ public class Query5 extends Query {
         timeLogger.addEvent(EventType.FILE_READ_START);
         List<Tree> trees = getTrees();
         timeLogger.addEvent(EventType.FILE_READ_END);
-        IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
-        dMap.clear();
-        trees.forEach(tree -> dMap.put(tree.getNeighbourhood().getName(), tree));
+        IList<Tree> dList = this.instance.getList(QUERY_ID + "l");
+        dList.clear();
+        dList.addAll(trees);
 
         // Get key value source
-        KeyValueSource<String, Tree> source = KeyValueSource.fromMap(dMap);
+        KeyValueSource<String, Tree> source = KeyValueSource.fromList(dList);
 
         // Get job tracker
         JobTracker jobTracker = this.instance.getJobTracker(QUERY_ID + "j");
@@ -79,19 +78,24 @@ public class Query5 extends Query {
 
         // Map reduce
         timeLogger.addEvent(EventType.MAPREDUCE_START);
-        ICompletableFuture<List<PairedValues>> completableFuture = job.keyPredicate(new SpecificKeyPredicate(this.neighbourhood))
-                .mapper(new StreetSpecificTreeNameMapper(this.commonName))
-                .combiner(new SumCombinerFactory())
-                .reducer(new SumInTensReducerFactory())
-                .submit(new PairedValuesCollator());
-
-        List<PairedValues> entries = completableFuture.get();
+        List<PairedValues> entries = mapReduce(job, this.neighbourhood, this.commonName);
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         queryWriter.writeQueryResults(entries);
 
         // Shut down
         this.instance.shutdown();
+    }
+
+    // For testing
+    public List<PairedValues> mapReduce(Job<String, Tree> job, String neighbourhood, String commonName) throws ExecutionException, InterruptedException {
+        ICompletableFuture<List<PairedValues>> completableFuture = job
+                .mapper(new StreetSpecificTreeNameMapper(neighbourhood, commonName))
+                .combiner(new SumCombinerFactory())
+                .reducer(new SumInTensReducerFactory())
+                .submit(new PairedValuesCollator());
+
+        return completableFuture.get();
     }
 
 }

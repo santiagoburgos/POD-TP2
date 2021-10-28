@@ -11,8 +11,10 @@ import ar.edu.itba.pod.client.writers.Query3Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import com.hazelcast.core.ICompletableFuture;
+import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
+import com.hazelcast.mapreduce.JobCompletableFuture;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
@@ -71,14 +73,12 @@ public class Query3 extends Query{
         timeLogger.addEvent(EventType.FILE_READ_END);
 
 
-        IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
-        dMap.clear();
-        trees.forEach(tree -> dMap.put(tree.getNeighbourhood().getName(), tree));
-
-
+        IList<Tree> dList = this.instance.getList(QUERY_ID + "l");
+        dList.clear();
+        dList.addAll(trees);
 
         // Get key value source
-        KeyValueSource<String, Tree> source = KeyValueSource.fromMap(dMap);
+        KeyValueSource<String, Tree> source = KeyValueSource.fromList(dList);
 
         // Get job tracker
         JobTracker jobTracker = this.instance.getJobTracker(QUERY_ID + "j");
@@ -87,19 +87,22 @@ public class Query3 extends Query{
 
         // Map reduce
         timeLogger.addEvent(EventType.MAPREDUCE_START);
-
-        ICompletableFuture<List<Map.Entry<String, Long>>> future = job
-                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
-                .mapper(new NeighbourhoodSpeciesCounterMapper())
-                .reducer(new UniqueReducerFactory())
-                .submit(new TopNCollator(n));
-
-        List<Map.Entry<String, Long>> result = future.get();
+        List<Map.Entry<String, Long>> result = mapReduce(neighbourhoods, job, this.n);
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         queryWriter.writeQueryResults(result);
 
         // Shut down
         this.instance.shutdown();
+    }
+
+    // For testing
+    public List<Map.Entry<String, Long>> mapReduce(List<String> neighbourhoods, Job<String, Tree> job, int n) throws ExecutionException, InterruptedException {
+        ICompletableFuture<List<Map.Entry<String, Long>>> future = job
+                .mapper(new NeighbourhoodSpeciesCounterMapper(neighbourhoods))
+                .reducer(new UniqueReducerFactory())
+                .submit(new TopNCollator(n));
+
+        return future.get();
     }
 }

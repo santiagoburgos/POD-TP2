@@ -11,6 +11,7 @@ import ar.edu.itba.pod.client.EventType;
 import ar.edu.itba.pod.client.writers.Query4Writer;
 import ar.edu.itba.pod.client.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
+import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
@@ -55,12 +56,12 @@ public class Query4 extends Query {
         List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
         timeLogger.addEvent(EventType.FILE_READ_END);
 
-        IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
-        dMap.clear();
-        trees.forEach(tree -> dMap.put(tree.getNeighbourhood().getName(), tree));
+        IList<Tree> dList = this.instance.getList(QUERY_ID + "l");
+        dList.clear();
+        dList.addAll(trees);
 
         // Get key value source
-        KeyValueSource<String, Tree> source = KeyValueSource.fromMap(dMap);
+        KeyValueSource<String, Tree> source = KeyValueSource.fromList(dList);
 
         // Get job tracker
         JobTracker jobTracker = this.instance.getJobTracker(QUERY_ID + "j");
@@ -69,18 +70,21 @@ public class Query4 extends Query {
 
         // Map reduce
         timeLogger.addEvent(EventType.MAPREDUCE_START);
-        ICompletableFuture<List<PairedValues>> completableFuture = job
-                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
-                .mapper(new NeighbourhoodSpeciesCounterMapper())
-                .reducer(new UniqueReducerFactory(100L))
-                .submit(new PairedValuesCollator());
-
-        List<PairedValues> entries = completableFuture.get();
+        List<PairedValues> entries = mapReduce(job, neighbourhoods);
         timeLogger.addEvent(EventType.MAPREDUCE_END);
 
         queryWriter.writeQueryResults(entries);
 
         // Shut down
         this.instance.shutdown();
+    }
+
+    public List<PairedValues> mapReduce(Job<String, Tree> job, List<String> neighbourhoods) throws ExecutionException, InterruptedException {
+        ICompletableFuture<List<PairedValues>> completableFuture = job
+                .mapper(new NeighbourhoodSpeciesCounterMapper(neighbourhoods))
+                .reducer(new UniqueReducerFactory(100L))
+                .submit(new PairedValuesCollator());
+
+        return completableFuture.get();
     }
 }
