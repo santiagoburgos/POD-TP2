@@ -45,7 +45,7 @@
 
    **-DoutPath** indica el path donde estarán ambos archivos de salida query1.csv y time1.txt.
     ```
-    ./query1.sh -DCity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=.
+    ./query1.sh -Dcity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=.
     ```
    #### Query 2: Para cada barrio, la especie con mayor cantidad de árboles por habitante
     - Parametros:
@@ -58,7 +58,7 @@
 
    **-DoutPath** indica el path donde estarán ambos archivos de salida query1.csv y time1.txt.
     ```
-    ./query2.sh -DCity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=.
+    ./query2.sh -Dcity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=.
     ```
    #### Query 3: Top n barrios con mayor cantidad de especies distintas
     - Parametros:
@@ -73,7 +73,7 @@
 
    **-Dn** indica la cantidad maxima de barrios en la salida.
     ```
-    ./query3.sh -DCity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=. -Dn=5
+    ./query3.sh -Dcity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=. -Dn=5
     ```
    #### Query 4: Pares de barrios que registran la misma cantidad de cientos de especies distintas
     - Parametros:
@@ -86,7 +86,7 @@
 
    **-DoutPath** indica el path donde estarán ambos archivos de salida query1.csv y time1.txt.
     ```
-    ./query4.sh -DCity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=.
+    ./query4.sh -Dcity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=.
     ```
    #### Query 5: Pares de calles de un barrio X que registran la misma cantidad de decenas de árboles de una especie Y
     - Parametros:
@@ -103,7 +103,7 @@
 
    **-DcommonName** indica la especie Y que los árboles deben ser.
     ```
-    ./query5.sh -DCity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=. -Dneighbourhood='KITSILANO -DcommonName='NORWAY_MAPLE
+    ./query5.sh -Dcity=BUE -Daddresses='10.6.0.1:5701' -DinPath=. -DoutPath=. -Dneighbourhood='KITSILANO -DcommonName='NORWAY_MAPLE
     ```
     
     
