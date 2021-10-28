@@ -25,7 +25,8 @@ public class PairedValuesCollator implements Collator<Map.Entry<String, Long>, L
                 Map.Entry<String, Long> secondEntry = asList.get(j);
 
                 if (firstEntry.getValue().equals(secondEntry.getValue())) {
-                    auxList.add(new PairedValues(firstEntry.getValue(), firstEntry.getKey(), secondEntry.getKey()));
+                    if (!firstEntry.getKey().equals(secondEntry.getKey()))
+                        auxList.add(new PairedValues(firstEntry.getValue(), firstEntry.getKey(), secondEntry.getKey()));
                 }
             }
         }
