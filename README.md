@@ -2,7 +2,11 @@
 
 ## Compilación
 1. Utilizando el comando **cd** situarse en el directorio del proyecto **tpe2-g6**.
-2. Ejecutar el comando **mvn clean install**.
+2. (Opcional) cambiar el valor de ip deseado para el server en **tpe2-g6/server/src/main/resources/config.properties**
+   ```
+   ip=192.168.1.*
+   ```
+3. Ejecutar el comando **mvn clean install**.
 
 ## Ejecución
 1. Una vez compilado situarse en las carpetas target de *client* y *server*.
