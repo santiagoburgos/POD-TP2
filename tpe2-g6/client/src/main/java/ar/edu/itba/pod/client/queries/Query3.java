@@ -71,12 +71,12 @@ public class Query3 extends Query{
         // Map reduce
         // TODO write start time
 
-        ICompletableFuture<List<Map.Entry<String, Integer>>> future = job
+        ICompletableFuture<List<Map.Entry<String, Long>>> future = job
                 .mapper(new NeighbourhoodSpeciesCounterMapper())
                 .reducer(new UniqueReducerFactory())
                 .submit(new TopNCollator(n));
 
-        List<Map.Entry<String, Integer>> result = future.get();
+        List<Map.Entry<String, Long>> result = future.get();
 
         // TODO write stop time
 

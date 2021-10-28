@@ -4,11 +4,11 @@ import ar.edu.itba.pod.api.model.Tree;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class Query5Mapper implements Mapper<String, Tree, String, Long> {
+public class StreetSpecificTreeNameMapper implements Mapper<String, Tree, String, Long> {
     private static final Long ONE = 1L;
     private final String name;
 
-    public Query5Mapper(String name) {
+    public StreetSpecificTreeNameMapper(String name) {
         this.name = name;
     }
 
