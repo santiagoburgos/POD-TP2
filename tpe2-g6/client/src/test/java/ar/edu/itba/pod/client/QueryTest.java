@@ -1,23 +1,15 @@
 package ar.edu.itba.pod.client;
 
 import ar.edu.itba.pod.api.model.Neighbourhood;
-import ar.edu.itba.pod.api.model.PairedValues;
-import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.client.queries.Query5;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
-import com.hazelcast.mapreduce.Job;
-import com.hazelcast.mapreduce.KeyValueSource;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -27,7 +19,16 @@ public abstract class QueryTest {
     protected HazelcastInstance member, client;
 
     protected final List<Neighbourhood> neighbourhoods = Arrays.asList(
-            new Neighbourhood("B1"), new Neighbourhood("B2"), new Neighbourhood("B3"));
+            new Neighbourhood("B1", 2000L),
+            new Neighbourhood("B2", 20000L),
+            new Neighbourhood("B3", 31000L),
+            new Neighbourhood("B4", 25500L),
+            new Neighbourhood("B5", 200210L),
+            new Neighbourhood("B6", 312000L),
+            new Neighbourhood("B7", 45000L),
+            new Neighbourhood("B8", 1122000L),
+            new Neighbourhood("B9", 231000L),
+            new Neighbourhood("B10", 12300L));
 
     @Before
     public void setUp() {
