@@ -34,10 +34,10 @@ public class TreesPerNeighborhood {
         logger.info("tpe2-g6 Query 1 Client Starting ...");
 
 
-        String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
-        String city = Optional.ofNullable(System.getProperty("city")).orElseThrow(() -> new IllegalArgumentException("'city' argument needed."));
-        String inPath = Optional.ofNullable(System.getProperty("inPath")).orElseThrow(() -> new IllegalArgumentException("'inPath' argument needed."));
-        String outPath = Optional.ofNullable(System.getProperty("outPath")).orElseThrow(() -> new IllegalArgumentException("'outPath' argument needed."));
+        //String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
+        //String city = Optional.ofNullable(System.getProperty("city")).orElseThrow(() -> new IllegalArgumentException("'city' argument needed."));
+        //String inPath = Optional.ofNullable(System.getProperty("inPath")).orElseThrow(() -> new IllegalArgumentException("'inPath' argument needed."));
+        //String outPath = Optional.ofNullable(System.getProperty("outPath")).orElseThrow(() -> new IllegalArgumentException("'outPath' argument needed."));
 
 
         // Client Config
@@ -51,19 +51,28 @@ public class TreesPerNeighborhood {
         ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
 
 
-        String[] addresses = addressesArg.split(";");
-
+        //String[] addresses = addressesArg.split(";");
+        String[] addresses = {"192.168.0.220"};
 
         clientNetworkConfig.addAddress(addresses);
         clientConfig.setNetworkConfig(clientNetworkConfig);
 
         HazelcastInstance hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
 
-        FileParser fp = new FileParser();
-        List<Neighbourhood> neighbourhoods = fp.parseNeighbourhoods(inPath, city);
-        List<Tree> trees = fp.parseTrees(inPath, city);
+        ///FileParser fp = new FileParser();
+        //List<Neighbourhood> neighbourhoods = fp.parseNeighbourhoods(inPath, city);
+        //List<Tree> trees = fp.parseTrees(inPath, city);
 
-
+        //
+        List<Tree> trees = new ArrayList<>();
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1") );
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1") );
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t2") );
+        trees.add(new Tree(new Neighbourhood("n2", 20l), "s1", "t1") );
+        List<Neighbourhood> neighbourhoods = new ArrayList<>();
+        neighbourhoods.add(new Neighbourhood("n1", 10l));
+        neighbourhoods.add(new Neighbourhood("n2", 20l));
+        //
 
         String ilistName = "g6q1";
         IList<String> treeOnNeighbourhood = hazelcastInstance.getList(ilistName);

@@ -34,10 +34,10 @@ public class TreesPerPerson {
         logger.info("tpe2-g6 Query 2 Client Starting ...");
 
 
-        String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
-        String city = Optional.ofNullable(System.getProperty("city")).orElseThrow(() -> new IllegalArgumentException("'city' argument needed."));
-        String inPath = Optional.ofNullable(System.getProperty("inPath")).orElseThrow(() -> new IllegalArgumentException("'inPath' argument needed."));
-        String outPath = Optional.ofNullable(System.getProperty("outPath")).orElseThrow(() -> new IllegalArgumentException("'outPath' argument needed."));
+        //String addressesArg = Optional.ofNullable(System.getProperty("addresses")).orElseThrow(() -> new IllegalArgumentException("'addresses' argument needed."));
+        //String city = Optional.ofNullable(System.getProperty("city")).orElseThrow(() -> new IllegalArgumentException("'city' argument needed."));
+        //String inPath = Optional.ofNullable(System.getProperty("inPath")).orElseThrow(() -> new IllegalArgumentException("'inPath' argument needed."));
+        //String outPath = Optional.ofNullable(System.getProperty("outPath")).orElseThrow(() -> new IllegalArgumentException("'outPath' argument needed."));
 
 
         // Client Config
@@ -51,19 +51,38 @@ public class TreesPerPerson {
         ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
 
 
-        String[] addresses = addressesArg.split(";");
-        
+        //String[] addresses = addressesArg.split(";");
+        String[] addresses = {"192.168.0.220"};
 
         clientNetworkConfig.addAddress(addresses);
         clientConfig.setNetworkConfig(clientNetworkConfig);
 
         HazelcastInstance hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
 
-        FileParser fp = new FileParser();
-        List<Neighbourhood> neighbourhoods = fp.parseNeighbourhoods(inPath, city);
-        List<Tree> trees = fp.parseTrees(inPath, city);
+       // FileParser fp = new FileParser();
+       // List<Neighbourhood> neighbourhoods = fp.parseNeighbourhoods(inPath, city);
+       // List<Tree> trees = fp.parseTrees(inPath, city);
 
+        List<Neighbourhood> neighbourhoods = new ArrayList<>();
+        neighbourhoods.add(new Neighbourhood("n3", 50l));
+        neighbourhoods.add(new Neighbourhood("n1", 10l));
+        neighbourhoods.add(new Neighbourhood("n2", 20l));
 
+        List<Tree> trees = new ArrayList<>();
+        trees.add(new Tree(new Neighbourhood("n3", 50l), "s1", "t8" ));
+        trees.add(new Tree(new Neighbourhood("n2", 20l), "s1", "t3" ));
+        trees.add(new Tree(new Neighbourhood("n2", 20l), "s1", "t3" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1" ));
+        trees.add(new Tree(new Neighbourhood("n2", 20l), "s1", "t1" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t2" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t2" ));
+        trees.add(new Tree(new Neighbourhood("n1", 10l), "s1", "t1" ));
+        trees.add(new Tree(new Neighbourhood("n2", 20l), "s1", "t2" ));
+        trees.add(new Tree(new Neighbourhood("n2", 20l), "s1", "t3" ));
+        //
 
         String ilistName = "g6q2";
         IList<OutTreeNeighbourhood> treeOnNeighbourhood = hazelcastInstance.getList(ilistName);
@@ -76,20 +95,6 @@ public class TreesPerPerson {
         KeyValueSource<String, OutTreeNeighbourhood> source = KeyValueSource.fromList(treeOnNeighbourhood);
         JobTracker jobTracker = hazelcastInstance.getJobTracker(ilistName);
 
-        /*
-        Job<String, OutTreeNeighbourhood> job = jobTracker.newJob(source);
-        ICompletableFuture<List<Map.Entry<OutTreeNeighbourhood, Double>>> future = job
-                .mapper( new CounterOverPopulationMapper<>() )
-                .reducer( new SumReducerFactory())
-                .submit( new MaxTreePerPersonKDescCollator());
-
-        List<Map.Entry<OutTreeNeighbourhood, Double>> result = future.get();
-
-        //todo to outfile
-        for (Map.Entry<OutTreeNeighbourhood, Double> e:result) {
-            System.out.println(" " + e.getKey().getNeighbourhoodName() + " " + e.getKey().getTreeName() + " " + String.format(Locale.ROOT,"%.2f",e.getValue()) );
-        }
-        */
 
         Job<String, OutTreeNeighbourhood> job = jobTracker.newJob(source);
         ICompletableFuture<Map<OutTreeNeighbourhood, Double>> future = job
@@ -116,11 +121,10 @@ public class TreesPerPerson {
         List<Map.Entry<String, OutTreeNeighbourhood>> result2 = future2.get();
 
 
-        //todo to outfile
+        //todo to output
         for (Map.Entry<String, OutTreeNeighbourhood> e:result2) {
             System.out.println(" " + e.getKey() + " " + e.getValue().getTreeName() + " " + String.format(Locale.ROOT,"%.2f",e.getValue().getPopulation()));
         }
-
 
         HazelcastClient.shutdown(hazelcastInstance);
     }
