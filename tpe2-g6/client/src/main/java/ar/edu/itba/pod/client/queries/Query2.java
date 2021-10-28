@@ -11,9 +11,9 @@ import ar.edu.itba.pod.api.model.Tree;
 import ar.edu.itba.pod.api.reducers.MaxValueReducerFactory;
 import ar.edu.itba.pod.api.reducers.SumReducerFactory;
 
-import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.EventType;
 import ar.edu.itba.pod.client.writers.Query2Writer;
-import ar.edu.itba.pod.client.TimeLogger;
+import ar.edu.itba.pod.client.writers.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
@@ -47,11 +47,12 @@ public class Query2 extends Query{
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 2 Client Starting ...");
 
-        Query2Writer queryWriter = new Query2Writer(this.outPath);
-        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time2.txt");
-
         // Parse arguments
         readArguments();
+
+        // Writers
+        Query2Writer queryWriter = new Query2Writer(this.outPath);
+        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time2.txt");
 
         // Config hazel
         configHazelCast();

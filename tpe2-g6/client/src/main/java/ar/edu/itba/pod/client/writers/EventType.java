@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.client;
+package ar.edu.itba.pod.client.writers;
 
 public enum EventType {
 

@@ -5,14 +5,12 @@ import ar.edu.itba.pod.api.mappers.NeighbourhoodSpeciesCounterMapper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.PairedValues;
 import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.UniqueReducerFactory;
-import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.EventType;
 import ar.edu.itba.pod.client.writers.Query4Writer;
-import ar.edu.itba.pod.client.TimeLogger;
+import ar.edu.itba.pod.client.writers.TimeLogger;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
-import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -41,11 +39,12 @@ public class Query4 extends Query {
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 4 Client Starting ...");
 
-        Query4Writer queryWriter = new Query4Writer(this.outPath);
-        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time4.txt");
-
         // Parse arguments
         readArguments();
+
+        // Writers
+        Query4Writer queryWriter = new Query4Writer(this.outPath);
+        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time4.txt");
 
         // Config hazel
         configHazelCast();

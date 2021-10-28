@@ -4,17 +4,14 @@ import ar.edu.itba.pod.api.collators.TopNCollator;
 import ar.edu.itba.pod.api.mappers.NeighbourhoodSpeciesCounterMapper;
 import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
 import ar.edu.itba.pod.api.reducers.UniqueReducerFactory;
-import ar.edu.itba.pod.client.EventType;
+import ar.edu.itba.pod.client.writers.EventType;
 import ar.edu.itba.pod.client.writers.Query3Writer;
-import ar.edu.itba.pod.client.TimeLogger;
+import ar.edu.itba.pod.client.writers.TimeLogger;
 import ar.edu.itba.pod.client.exceptions.MissingFieldException;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
-import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
-import com.hazelcast.mapreduce.JobCompletableFuture;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
@@ -57,11 +54,12 @@ public class Query3 extends Query{
     public void run() throws IOException, ExecutionException, InterruptedException {
         logger.info("tpe2-g6 Query 3 Client Starting ...");
 
-        Query3Writer queryWriter = new Query3Writer(this.outPath);
-        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time3.txt");
-
         // Parse arguments
         readArguments();
+
+        // Writers
+        Query3Writer queryWriter = new Query3Writer(this.outPath);
+        TimeLogger timeLogger = new TimeLogger(QUERY_ID, this.outPath + "/time3.txt");
 
         // Config hazel
         configHazelCast();
