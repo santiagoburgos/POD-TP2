@@ -11,6 +11,8 @@ public class Tree implements DataSerializable {
     private String street;
     private String name;
 
+    protected Tree() {}
+
     public Tree(Neighbourhood neighbourhood, String street, String name) {
         this.neighbourhood = neighbourhood;
         this.street = street;
