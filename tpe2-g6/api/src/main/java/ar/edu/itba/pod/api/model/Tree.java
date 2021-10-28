@@ -12,6 +12,7 @@ public class Tree implements DataSerializable {
     private String name;
 
     protected Tree() {}
+
     public Tree(Neighbourhood neighbourhood, String street, String name) {
         this.neighbourhood = neighbourhood;
         this.street = street;
@@ -64,4 +65,5 @@ public class Tree implements DataSerializable {
         return neighbourhood.equals(tree.neighbourhood) &&
                 street.equals(tree.street) &&
                 name.equals(tree.name);
-    }}
+    }
+}
