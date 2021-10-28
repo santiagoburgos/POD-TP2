@@ -29,11 +29,11 @@ public class Query2Test extends QueryTest {
         addTrees(trees, 2000, 1); //T0
         addTrees(trees, 200, 1);
         addTrees(trees, 40, 3);
-        addTrees(trees, 30, 4);
-        addTrees(trees, 100, 4);
-        addTrees(trees, 40, 4);
+        addTrees(trees, 62000, 3); //T3
+        addTrees(trees, 62000, 3); //T4
+        addTrees(trees, 62000, 3); //T5
         addTrees(trees, 5, 5);
-        addTrees(trees, 5, 6);
+        addTrees(trees, 600, 1);
         addTrees(trees, 31000, 3); //T8
         addTrees(trees, 24000, 3);
 
@@ -66,12 +66,14 @@ public class Query2Test extends QueryTest {
         Map.Entry<String, PairCompoundKeyValue> first = result2.get(0);
         Map.Entry<String, PairCompoundKeyValue> second = result2.get(1);
 
+        Map.Entry<String, PairCompoundKeyValue> third = result2.get(2);
+
         Assert.assertEquals(first.getValue().getK1(), "B1");
         Assert.assertEquals(first.getValue().getK2(), "T0");
         Assert.assertEquals(first.getValue().getValue().doubleValue(), 1d, 1E-2);
         Assert.assertEquals(second.getValue().getK1(), "B3");
-        Assert.assertEquals(second.getValue().getK2(), "T8");
-        Assert.assertEquals(second.getValue().getValue().doubleValue(), 1d, 1E-2);
+        Assert.assertEquals(second.getValue().getK2(), "T3");
+        Assert.assertEquals(second.getValue().getValue().doubleValue(), 2d, 1E-2);
 
     }
 

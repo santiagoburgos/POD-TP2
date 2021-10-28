@@ -22,6 +22,9 @@ private class MaxReducer extends Reducer<PairCompoundKeyValue, PairCompoundKeyVa
         }
         else if(max.getValue() < value.getValue())
             max = value;
+        else if(max.getValue().equals(value.getValue()) )
+            if(max.getK2().toLowerCase().compareTo(value.getK2().toLowerCase()) > 0)
+                max = value;
     }
     @Override
     public PairCompoundKeyValue finalizeReduce() {
