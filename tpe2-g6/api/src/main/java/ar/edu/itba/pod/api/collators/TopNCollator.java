@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.api.collators;
 
-import ar.edu.itba.pod.api.model.Neighbourhood;
 import com.hazelcast.mapreduce.Collator;
 
 import java.util.Comparator;
@@ -9,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class TopNCollator implements Collator<Map.Entry<String, Integer>, List<Map.Entry<String, Integer>>> {
+public class TopNCollator implements Collator<Map.Entry<String, Long>, List<Map.Entry<String, Long>>> {
     private final Integer n;
 
     public TopNCollator(Integer n) {
@@ -17,14 +16,14 @@ public class TopNCollator implements Collator<Map.Entry<String, Integer>, List<M
     }
 
     @Override
-    public List<Map.Entry<String, Integer>> collate(Iterable<Map.Entry<String, Integer>> iterable) {
+    public List<Map.Entry<String, Long>> collate(Iterable<Map.Entry<String, Long>> iterable) {
         return StreamSupport.stream(iterable.spliterator(),false)
                 .sorted(getUniqueSpeciesComparator())
                 .limit(n)
                 .collect(Collectors.toList());
     }
 
-    private Comparator<Map.Entry<String, Integer>> getUniqueSpeciesComparator() {
+    private Comparator<Map.Entry<String, Long>> getUniqueSpeciesComparator() {
         return (e1, e2) -> {
             if(e1.getValue().equals(e2.getValue()))
                 return String.CASE_INSENSITIVE_ORDER.compare(e1.getKey(), e2.getKey());

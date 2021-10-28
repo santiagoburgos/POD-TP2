@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class Query5Collator implements Collator<Map.Entry<String, Long>, List<PairedValues>> {
+public class PairedValuesCollator implements Collator<Map.Entry<String, Long>, List<PairedValues>> {
 
     @Override
     public List<PairedValues> collate(Iterable<Map.Entry<String, Long>> values) {

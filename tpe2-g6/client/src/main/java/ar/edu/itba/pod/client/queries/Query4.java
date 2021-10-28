@@ -1,13 +1,12 @@
 package ar.edu.itba.pod.client.queries;
 
 import ar.edu.itba.pod.api.collators.PairedValuesCollator;
-import ar.edu.itba.pod.api.combiners.SumCombinerFactory;
-import ar.edu.itba.pod.api.mappers.StreetSpecificTreeNameMapper;
+import ar.edu.itba.pod.api.mappers.NeighbourhoodSpeciesCounterMapper;
+import ar.edu.itba.pod.api.model.Neighbourhood;
 import ar.edu.itba.pod.api.model.PairedValues;
 import ar.edu.itba.pod.api.model.Tree;
-import ar.edu.itba.pod.api.predicates.SpecificKeyPredicate;
-import ar.edu.itba.pod.api.reducers.SumInTensReducerFactory;
-import ar.edu.itba.pod.client.exceptions.MissingFieldException;
+import ar.edu.itba.pod.api.predicates.KeyInArrayPredicate;
+import ar.edu.itba.pod.api.reducers.UniqueReducerFactory;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
@@ -18,36 +17,25 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
-public class Query5 extends Query {
-    private static final String QUERY_ID = "g6q5";
+public class Query4 extends Query {
+    private static final String QUERY_ID = "g6q4";
 
-    private static Logger logger = LoggerFactory.getLogger(Query5.class);
-
-    private String neighbourhood;
-    private String commonName;
+    private static Logger logger = LoggerFactory.getLogger(Query4.class);
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         try {
-            new Query5().run();
+            new Query4().run();
         } catch (IOException e) {
-            // TODO: do something
             logger.error(e.getMessage());
         }
     }
 
     @Override
-    public void readArguments() {
-        super.readArguments();
-        this.neighbourhood = Optional.ofNullable(System.getProperty("neighbourhood")).orElseThrow(MissingFieldException::new);
-        this.commonName = Optional.ofNullable(System.getProperty("commonName")).orElseThrow(MissingFieldException::new);
-    }
-
-    @Override
     public void run() throws IOException, ExecutionException, InterruptedException {
-        logger.info("tpe2-g6 Query 5 Client Starting ...");
+        logger.info("tpe2-g6 Query 4 Client Starting ...");
 
         // Parse arguments
         readArguments();
@@ -55,8 +43,9 @@ public class Query5 extends Query {
         // Config hazel
         configHazelCast();
 
-        // Parse data
+        // Prepare data
         List<Tree> trees = getTrees();
+        List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
         IMap<String, Tree> dMap = this.instance.getMap(QUERY_ID + "m");
         dMap.clear();
         trees.forEach(tree -> dMap.put(tree.getNeighbourhood().getName(), tree));
@@ -71,10 +60,10 @@ public class Query5 extends Query {
 
         // Map reduce
         // TODO write start time
-        ICompletableFuture<List<PairedValues>> completableFuture = job.keyPredicate(new SpecificKeyPredicate(this.neighbourhood))
-                .mapper(new StreetSpecificTreeNameMapper(this.commonName))
-                .combiner(new SumCombinerFactory())
-                .reducer(new SumInTensReducerFactory())
+        ICompletableFuture<List<PairedValues>> completableFuture = job
+                .keyPredicate(new KeyInArrayPredicate(neighbourhoods))
+                .mapper(new NeighbourhoodSpeciesCounterMapper())
+                .reducer(new UniqueReducerFactory(100L))
                 .submit(new PairedValuesCollator());
 
         List<PairedValues> entries = completableFuture.get();
@@ -85,5 +74,4 @@ public class Query5 extends Query {
         // Shut down
         this.instance.shutdown();
     }
-
 }

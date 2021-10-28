@@ -3,13 +3,13 @@ package ar.edu.itba.pod.api.reducers;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class Query5ReducerFactory implements ReducerFactory<String, Long, Long> {
+public class SumInTensReducerFactory implements ReducerFactory<String, Long, Long> {
     @Override
     public Reducer<Long, Long> newReducer(String s) {
-        return new Query5Reducer();
+        return new SumInTensReducer();
     }
 
-    private class Query5Reducer extends Reducer<Long, Long> {
+    private static class SumInTensReducer extends Reducer<Long, Long> {
         private volatile long sum;
 
         @Override
@@ -24,7 +24,7 @@ public class Query5ReducerFactory implements ReducerFactory<String, Long, Long> 
 
         @Override
         public Long finalizeReduce() {
-            return (Math.floorDiv(sum, 100L)) * 100;
+            return (Math.floorDiv(sum, 10L)) * 10;
         }
     }
 }
