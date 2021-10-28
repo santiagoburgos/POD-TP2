@@ -57,13 +57,15 @@ public class Query4Test extends QueryTest {
         Assert.assertEquals(firstPair.getMember1(), neighbourhoods.get(3 - 1).getName());
         Assert.assertEquals(firstPair.getMember2(), neighbourhoods.get(4 - 1).getName());
         Assert.assertFalse(pairedValues.stream().anyMatch(pv -> pv.getMember1().equals(invalidN) || pv.getMember2().equals(invalidN)));
+        Assert.assertFalse(pairedValues.stream().anyMatch(pv -> pv.getCommonValue() < 100L));
     }
 
     private void addUniqueTrees(List<Tree> trees, int n, int id) {
         if (id <= 0 || id > neighbourhoods.size())
             return;
         for (int i = 0; i < n; i++) {
-            trees.add(new Tree(neighbourhoods.get(id - 1), "", "S" + (i + 1)));
+            trees.add(new Tree(neighbourhoods.get(id - 1), "", "T" + (i + 1)));
+            trees.add(new Tree(neighbourhoods.get(id - 1), "", "T" + (i + 1)));
         }
     }
 }
