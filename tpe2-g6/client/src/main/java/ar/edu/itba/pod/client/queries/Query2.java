@@ -26,11 +26,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class Query2 extends Query{
     private static final String QUERY_ID = "g6q2";
-
 
     private static Logger logger = LoggerFactory.getLogger(Query2.class);
 
@@ -60,14 +58,19 @@ public class Query2 extends Query{
         // Parse data
         timeLogger.addEvent(EventType.FILE_READ_START);
         List<Tree> trees = getTrees();
-        List<String> neighbourhoods = getNeighbourhoods().stream().map(Neighbourhood::getName).collect(Collectors.toList());
+        List<Neighbourhood> neighbourhoodsList = getNeighbourhoods();
+        HashMap<String, Neighbourhood> neighbourhoodMap = new HashMap<>();
+        for (Neighbourhood neighbourhood: neighbourhoodsList) {
+            neighbourhoodMap.put(neighbourhood.getName(), neighbourhood);
+        }
+        Collection<String> neighbourhoods = neighbourhoodMap.keySet();
         timeLogger.addEvent(EventType.FILE_READ_END);
 
         String ilistName = "g6q21";
         IList<PairCompoundKeyValue> treeOnNeighbourhood = this.instance.getList(ilistName);
         treeOnNeighbourhood.clear();
         for (Tree t: trees) {
-            treeOnNeighbourhood.add(new PairCompoundKeyValue(t.getNeighbourhood().getName(),t.getName(), t.getNeighbourhood().getPopulation().doubleValue()) );
+            treeOnNeighbourhood.add(new PairCompoundKeyValue(t.getNeighbourhood().getName(),t.getName(), neighbourhoodMap.get(t.getNeighbourhood().getName()).getPopulation().doubleValue()) );
         }
 
         KeyValueSource<String, PairCompoundKeyValue> source = KeyValueSource.fromList(treeOnNeighbourhood);
@@ -95,7 +98,7 @@ public class Query2 extends Query{
         this.instance.shutdown();
     }
 
-    public Map<PairCompoundKeyValue, Double> mapReduce1( Job<String, PairCompoundKeyValue> job, List<String> neighbourhoods) throws ExecutionException, InterruptedException {
+    public Map<PairCompoundKeyValue, Double> mapReduce1( Job<String, PairCompoundKeyValue> job, Collection<String> neighbourhoods) throws ExecutionException, InterruptedException {
         ICompletableFuture<Map<PairCompoundKeyValue, Double>> future = job
                 .mapper( new CountOverValueMapper<>(neighbourhoods) )
                 .reducer( new SumReducerFactory())
@@ -103,7 +106,6 @@ public class Query2 extends Query{
 
         return future.get();
     }
-
 
     public List<Map.Entry<String, PairCompoundKeyValue>> mapReduce2(Job<PairCompoundKeyValue, Double>  job) throws ExecutionException, InterruptedException {
 
@@ -114,8 +116,4 @@ public class Query2 extends Query{
 
         return future2.get();
     }
-
-
-
-
 }
